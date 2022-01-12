@@ -40,15 +40,16 @@ def list_products_per_tag(tag_id):
         for product in Product.select()
         if tag in product.descriptive_tags
     ]
-    for product in products_per_tag:
-        print(product.name)
 
     table = Table(
-        title="List of products that have tag:"
-        + f"{tag.name} (tag id: {tag_id}"
+        title="List of products that have tag: "
+        + f"'{tag.name}' (tag id: {tag_id})"
     )
+    table.add_column("Product id", justify="right")
     table.add_column("Product name")
-    table.add_column("Quantity", justify="right")
+    for product in products_per_tag:
+        table.add_row(str(product.id), product.name)
+    console.print(Panel.fit(table))
 
 
 def add_product_to_catalog(user_id, product):
