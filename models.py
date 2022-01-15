@@ -9,7 +9,7 @@ class BaseModel(peewee.Model):
 
 
 class Tag(BaseModel):
-    name = peewee.CharField()
+    name = peewee.CharField(unique=True)
 
 
 class Product(BaseModel):

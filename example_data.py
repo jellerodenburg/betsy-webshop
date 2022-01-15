@@ -6,13 +6,28 @@ products = [
     ),
     (
         "Statue",
-        "A magnificent statue of Donald Trump.",
+        "A magnificent statue in bronze of Donald Trump with his dog.",
         "200",
     ),
     (
         "Bracelet",
         "Gold with diamonds",
         "75000",
+    ),
+    (
+        "Collar",
+        "A nice handmade leather collar for your pet",
+        "3500",
+    ),
+    (
+        "Homemade mustard",
+        "Delicious taste! Tip: try it on a hotdog.",
+        "300",
+    ),
+    (
+        "Handmade doghouse",
+        "Your canine friend will be dry and comfy in this nice shed",
+        "300",
     ),
 ]
 
@@ -23,6 +38,15 @@ tags = [
     ("white",),
     ("blue",),
     ("pink",),
+    ("dog",),
+    ("cat",),
+    ("animal",),
+    ("food",),
+    ("vegan",),
+    ("wood",),
+    ("carpentry",),
+    ("bronze",),
+    ("gold",),
 ]
 
 users = [

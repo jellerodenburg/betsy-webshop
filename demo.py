@@ -1,6 +1,7 @@
 from models import Product
 from rich.console import Console
 from methods import (
+    search,
     list_user_products,
     list_products_per_tag,
     add_product_to_catalog,
@@ -16,21 +17,30 @@ console_blue = Console(style="blue")
 def show_demo():
 
     console_blue.print(
-        "\n--- LIST USER PRODUCTS EXAMPLE ---\n"
+        "\n[b]--- SEARCH EXAMPLE ---[/b]\n"
+        + "This method looks for a search term in the "
+        + "'name', 'description' and 'descriptive_tags' of all 'Product's.\n"
+    )
+    search("in")
+    search("dog")
+    search("diamond")
+
+    console_blue.print(
+        "\n[b]--- LIST USER PRODUCTS EXAMPLE ---[/b]\n"
         + "This method shows a table with name and quantity of the 'Product's "
         + "that are registered as 'Asset' for a 'User'.\n"
     )
     list_user_products(1)
 
     console_blue.print(
-        "\n--- LIST PRODUCTS PER TAG EXAMPLE ---\n"
-        + "This method shows a table with the id and name of all the 'Product's"
-        + " that have a specific 'Tag'.\n"
+        "\n[b]--- LIST PRODUCTS PER TAG EXAMPLE ---[/b]\n"
+        + "This method shows a table with the id and name "
+        + "of all the 'Product's that have a specific 'Tag'.\n"
     )
     list_products_per_tag(1)
 
     console_blue.print(
-        "\n--- ADD PRODUCTS TO CATALOG EXAMPLES ---\n"
+        "\n[b]--- ADD PRODUCTS TO CATALOG EXAMPLES ---[/b]\n"
         + "This method will:\n"
         + "- Increase stock quantity by 1 "
         + "if the 'User' already has an 'Asset' for the specified 'Product'.\n"
@@ -44,17 +54,17 @@ def show_demo():
     add_product_to_catalog(1, statue)
 
     console_blue.print(
-        "\n--- UPDATE STOCK EXAMPLE ---\n"
+        "\n[b]--- UPDATE STOCK EXAMPLE ---[/b]\n"
         + "With this method 'product_quantity' "
         + "of specifc 'Asset' can be updated for a 'User'.\n"
     )
     update_stock(1, 2, 4)
 
     console_blue.print(
-        "\n--- PURCHASE PRODUCT EXAMPLE ---\n"
+        "\n[b]--- PURCHASE PRODUCT EXAMPLE ---[/b]\n"
         + "If the 'seller' has the sufficient 'product_quantity' "
         + "of the 'Product' in an 'Asset', this method will:\n"
-        + "1. Add the specified 'quantity' of 'Product' to the 'buyer's 'Asset';\n"
+        + "1. Add the 'quantity' of 'Product' to the 'buyer's 'Asset';\n"
         + "2. Decrease 'product quantity' in the 'Asset' for the 'seller';\n"
         + "3. Log a 'Transaction' to the database.\n"
         + "Note: for step 1 and 2 the 'update_stock' method will be used.\n"
@@ -62,15 +72,15 @@ def show_demo():
     purchase_product(1, 2, 1, 2)
 
     console_blue.print(
-        "\n--- REMOVE PRODUCT EXAMPLE ---\n"
+        "\n[b]--- REMOVE PRODUCT EXAMPLE ---[/b]\n"
         + "If the 'User' has an 'Asset' of the 'Product' "
         + "with a 'product_quantity' of at least 1, this method will:\n"
         + "Decrease 'product quantity' in the 'Asset' "
         + "using the 'update_stock' method.\n"
     )
-    console_blue.print("Remove a 'Print' from barry (he has 8):")
+    console_blue.print("Remove 'Print' from barry (he has 8):")
     remove_product(1, 1)
-    console_blue.print("Remove a 'Statue' from barry (he has 1):")
+    console_blue.print("Remove 'Statue' from barry (he has 1):")
     remove_product(2, 2)
     console_blue.print("Try remove a statue from barry again, does not work:")
     remove_product(2, 2)

@@ -8,7 +8,65 @@ console_blue = Console(style="blue")
 
 
 def search(term):
-    pass
+    term = term
+    products = Product.select()
+    products_with_term = []
+    for product in products:
+        if (
+            term in product.name
+            or term in product.description
+            or term_in_descriptive_tags(term, product)
+        ):
+            products_with_term.append(product)
+
+    table = Table(
+        title=f"Product search results for: '[r]{term}[/r]'", show_lines=True
+    )
+    table.add_column("Product name")
+    table.add_column("Product description")
+    table.add_column("Product tags")
+
+    for product in products_with_term:
+        product_name_highlighted = ireplace(
+            term, f"[r]{term}[/r]", product.name
+        )
+        product_description_highlighted = ireplace(
+            term, f"[r]{term}[/r]", product.description
+        )
+        product_tags_string = ""
+        for tag in product.descriptive_tags:
+            product_tags_string += f"{tag.name}, "
+        product_tags_string = product_tags_string[:-2]
+        product_tags_highlighted = ireplace(
+            term, f"[r]{term}[/r]", product_tags_string
+        )
+
+        table.add_row(
+            product_name_highlighted,
+            product_description_highlighted,
+            product_tags_highlighted,
+        )
+
+    console.print(Panel.fit(table))
+    print()
+
+
+def ireplace(old, new, text):
+    idx = 0
+    while idx < len(text):
+        index_l = text.lower().find(old.lower(), idx)
+        if index_l == -1:
+            return text
+        text = text[:index_l] + new + text[index_l + len(old) :]
+        idx = index_l + len(new)
+    return text
+
+
+def term_in_descriptive_tags(term, product):
+    for tag in product.descriptive_tags:
+        if term in tag.name:
+            return True
+    return False
 
 
 def list_user_products(user_id):
@@ -136,7 +194,7 @@ def purchase_product(product_id, buyer_id, seller_id, quantity):
             "----- TRANSACTION ------------\n"
             + f"A quantity of {quantity} "
             + f"of product '{product_to_purchase.name}' has been sold "
-            + f"from '{seller.first_name} {seller.last_name}'"
+            + f"from '{seller.first_name} {seller.last_name}' "
             + f"to '{buyer.first_name} {buyer.last_name}': \n"
         )
         Transaction.create(
