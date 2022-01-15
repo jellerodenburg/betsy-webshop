@@ -6,7 +6,7 @@ def initialize_db():
     db.create_tables([Asset, Product, Tag, Transaction, User, ProductTag])
     insert_products_and_tags()
     insert_users()
-    create_assets()  # makes users own products (create Asset records in db)
+    create_assets()  # make users own products (create Asset records in db)
     add_tags_to_products_1()
     add_tags_to_products_2()
 

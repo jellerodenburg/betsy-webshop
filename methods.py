@@ -133,13 +133,13 @@ def update_stock(user_id, product_id, new_quantity):
     # is user does not yet have the product:
     if asset is None:
         create_asset(new_quantity, user, product)
-    # if user already has an Asset for the product:
+    # else: (if user already has an Asset for the product)
     else:
-        # if the quantity of the product is zero or negative: print error
+        # if user's quantity of the product is zero or negative: print error
         if asset.product_quantity <= 0:
             print_quantity_error(product)
             return
-        # else: update quantity of the product in the existing asset record
+        # else: update quantity of the product in user's existing asset record
         else:
             update_product_quantity_in_asset(new_quantity, user, asset)
     list_user_products(user_id)
