@@ -128,41 +128,49 @@ def list_products_per_tag(tag_id):
 
 def update_stock(user_id, product_id, new_quantity):
     user = User.get_by_id(user_id)
-    product_to_update = Product.get_by_id(product_id)
-    existing_asset = get_asset(user, product_to_update)
+    product = Product.get_by_id(product_id)
+    asset = get_asset(user, product)
     # is user does not yet have the product:
-    if existing_asset is None:
-        # create new asset
-        Asset.create(
-            owner=user,
-            product=product_to_update,
-            product_quantity=new_quantity,
-        )
-        console.print(
-            f"Added product '{product_to_update.name}' "
-            + f"with a quantity of {new_quantity} "
-            + f"to the catalog of user '{user.first_name} {user.last_name}':"
-        )
-    # if user already has the product:
+    if asset is None:
+        create_asset(new_quantity, user, product)
+    # if user already has an Asset for the product:
     else:
-        # if the quantity of the product is zero or negative: do nothing
-        if existing_asset.product_quantity <= 0:
-            console.print(
-                f"Stock of product '{product_to_update.name}' not updated."
-            )
-            console.print(
-                "User cannot have a quantity of less than 0 of a product."
-            )
+        # if the quantity of the product is zero or negative: print error
+        if asset.product_quantity <= 0:
+            print_quantity_error(product)
+            return
         # else: update quantity of the product in the existing asset record
         else:
-            existing_asset.product_quantity = new_quantity
-            existing_asset.save()
-            console.print(
-                f"For user '{user.first_name} {user.last_name}' "
-                + f"quantity of product '{existing_asset.product.name}' "
-                + f"has been updated to {existing_asset.product_quantity}:"
-            )
+            update_product_quantity_in_asset(new_quantity, user, asset)
     list_user_products(user_id)
+
+
+def update_product_quantity_in_asset(new_quantity, user, asset):
+    asset.product_quantity = new_quantity
+    asset.save()
+    console.print(
+        f"For user '{user.first_name} {user.last_name}' "
+        + f"quantity of product '{asset.product.name}' "
+        + f"has been updated to {asset.product_quantity}:"
+    )
+
+
+def print_quantity_error(product):
+    console.print(f"Stock of product '{product.name}' not updated.")
+    console.print("User cannot have a quantity of less than 0 of a product.")
+
+
+def create_asset(new_quantity, user, product):
+    Asset.create(
+        owner=user,
+        product=product,
+        product_quantity=new_quantity,
+    )
+    console.print(
+        f"Added product '{product.name}' "
+        + f"with a quantity of {new_quantity} "
+        + f"to the catalog of user '{user.first_name} {user.last_name}':"
+    )
 
 
 def get_asset(user, product):
