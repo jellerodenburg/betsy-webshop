@@ -137,7 +137,7 @@ def update_stock(user_id, product_id, new_quantity):
     else:
         # if user's quantity of the product is zero or negative: print error
         if asset.product_quantity <= 0:
-            print_quantity_error(product)
+            print_quantity_error(product, user)
             return
         # else: update quantity of the product in user's existing asset record
         else:
@@ -155,9 +155,12 @@ def update_product_quantity_in_asset(new_quantity, user, asset):
     )
 
 
-def print_quantity_error(product):
-    console.print(f"Stock of product '{product.name}' not updated.")
-    console.print("User cannot have a quantity of less than 0 of a product.")
+def print_quantity_error(product, user):
+    console.print(
+        f"Stock of product '{product.name}' not updated "
+        + f"for '{user.first_name} {user.last_name}'.\n"
+        + "A user cannot have a quantity of less than 0 of a product."
+    )
 
 
 def create_asset(new_quantity, user, product):
