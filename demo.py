@@ -45,10 +45,8 @@ def show_demo():
 
     console_blue.print(
         "\n--- UPDATE STOCK EXAMPLE ---\n"
-        + "With this method you can update 'product_quantity' "
-        + "of specifc 'Asset' for a 'User'.\n"
-        + "The argument quantity can be a positive number (increase) "
-        + "or negative number (decrease) to update stock quantity with.\n"
+        + "With this method 'product_quantity' "
+        + "of specifc 'Asset' can be updated for a 'User'.\n"
     )
     update_stock(1, 2, 4)
 
@@ -70,9 +68,9 @@ def show_demo():
         + "Decrease 'product quantity' in the 'Asset' "
         + "using the 'update_stock' method.\n"
     )
+    console_blue.print("Remove a 'Print' from barry (he has 8):")
     remove_product(1, 1)
-    remove_product(1, 3)
-    remove_product(1, 3)
-    remove_product(1, 3)
-    remove_product(1, 3)
-    remove_product(1, 3)
+    console_blue.print("Remove a 'Statue' from barry (he has 1):")
+    remove_product(2, 2)
+    console_blue.print("Try remove a statue from barry again, does not work:")
+    remove_product(2, 2)

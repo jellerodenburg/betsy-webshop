@@ -50,11 +50,6 @@ def list_products_per_tag(tag_id):
     print()
 
 
-def add_product_to_catalog(user_id, product):
-    product_id = product.id
-    update_stock(user_id, product_id, 1)
-
-
 def update_stock(user_id, product_id, new_quantity):
     user = User.get_by_id(user_id)
     product_to_update = Product.get_by_id(product_id)
@@ -89,16 +84,29 @@ def update_stock(user_id, product_id, new_quantity):
             )
         # else: update quantity of the product in the existing asset record
         else:
-            existing_asset.product_quantity += new_quantity
+            existing_asset.product_quantity = new_quantity
             existing_asset.save()
             console.print(
                 f"For user '{user.first_name} {user.last_name}' "
                 + f"quantity of product '{existing_asset.product.name}' "
-                + f"has been updated from "
-                + f"{existing_asset.product_quantity - new_quantity}"
-                + f" to {existing_asset.product_quantity}:"
+                + f"has been updated to {existing_asset.product_quantity}:"
             )
     list_user_products(user_id)
+
+
+def add_product_to_catalog(user_id, product):
+    user = User.get_by_id(user_id)
+    product_id = product.id
+    existing_asset = (
+        Asset.select()
+        .where(Asset.owner == user)
+        .where(Asset.product == product)
+        .first()
+    )
+    if existing_asset is None:
+        update_stock(user_id, product_id, 1)
+    else:
+        update_stock(user_id, product_id, existing_asset.product_quantity + 1)
 
 
 def purchase_product(product_id, buyer_id, seller_id, quantity):
@@ -156,10 +164,21 @@ def purchase_product(product_id, buyer_id, seller_id, quantity):
         update_stock(
             seller.id,
             product_to_purchase.id,
-            existing_asset_from_seller.product_quantity - quantity,
+            (existing_asset_from_seller.product_quantity + quantity),
         )
 
 
 def remove_product(user_id, product_id):
     "----- REMOVE PRODUCT ------------\n"
-    update_stock(user_id, product_id, -1)
+    user = User.get_by_id(user_id)
+    product = Product.get_by_id(product_id)
+    existing_asset = (
+        Asset.select()
+        .where(Asset.owner == user)
+        .where(Asset.product == product)
+        .first()
+    )
+    if existing_asset is None:
+        console.print("The seller does not have this product")
+    else:
+        update_stock(user_id, product_id, existing_asset.product_quantity - 1)
