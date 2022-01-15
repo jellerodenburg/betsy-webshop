@@ -192,43 +192,60 @@ def add_product_to_catalog(user_id, product):
 
 
 def purchase_product(product_id, buyer_id, seller_id, quantity):
+    product = Product.get_by_id(product_id)
     seller = User.get_by_id(seller_id)
     buyer = User.get_by_id(buyer_id)
-    product = Product.get_by_id(product_id)
     seller_asset = get_asset(seller, product)
     seller_stock = seller_asset.product_quantity
+    if purchase_is_valid(quantity, seller, buyer, seller_asset, seller_stock):
+        process_transaction(quantity, product, seller, buyer, seller_stock)
+
+
+def purchase_is_valid(quantity, seller, buyer, seller_asset, seller_stock):
+    purchase_ok = False
     if seller == buyer:
         console.print("Sorry, you cannot buy products from yourself.")
-    if quantity < 1:
+    elif quantity < 1:
         console.print("Sorry, you cannot purchase zero or negative quantity.")
     # if seller does not have the product available:
     elif seller_asset is None:
-        console.print("The seller does not have the desired product")
+        console.print("The seller does not have the desired product.")
     elif seller_stock < quantity:
-        console.print(
-            "The seller does not have sufficient quantity of the product"
-        )
+        console.print("Seller has insufficient quantity of the product.")
     else:
-        console.print(
-            "---- TRANSACTION ----\n"
-            + f"A quantity of {quantity} "
-            + f"of product '{product.name}' has been sold "
-            + f"from '{seller.first_name} {seller.last_name}' "
-            + f"to '{buyer.first_name} {buyer.last_name}': \n"
-        )
-        Transaction.create(
-            buyer=buyer,
-            seller=seller,
-            product=product,
-            product_quantity=quantity,
-        )
-        buyer_asset = get_asset(buyer, product)
-        buyer_stock = 0
-        seller_new_stock = seller_stock - quantity
-        if buyer_asset is not None:
-            buyer_stock = buyer_asset.product_quantity
-        update_stock(buyer.id, product.id, buyer_stock + quantity)
-        update_stock(seller.id, product.id, seller_new_stock)
+        purchase_ok = True
+    return purchase_ok
+
+
+def process_transaction(quantity, product, seller, buyer, seller_stock):
+    create_transaction(quantity, product, seller, buyer)
+    print_transaction_info(quantity, product, seller, buyer)
+    buyer_asset = get_asset(buyer, product)
+    buyer_stock = 0
+    seller_new_stock = seller_stock - quantity
+    if buyer_asset is not None:
+        buyer_stock = buyer_asset.product_quantity
+    update_stock(buyer.id, product.id, buyer_stock + quantity)
+    update_stock(seller.id, product.id, seller_new_stock)
+
+
+def create_transaction(quantity, product, seller, buyer):
+    Transaction.create(
+        buyer=buyer,
+        seller=seller,
+        product=product,
+        product_quantity=quantity,
+    )
+
+
+def print_transaction_info(quantity, product, seller, buyer):
+    console.print(
+        "---- TRANSACTION ----\n"
+        + f"A quantity of {quantity} "
+        + f"of product '{product.name}' has been sold "
+        + f"from '{seller.first_name} {seller.last_name}' "
+        + f"to '{buyer.first_name} {buyer.last_name}': \n"
+    )
 
 
 # -------------- REMOVE PRODUCT -------------------------- #
