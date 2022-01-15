@@ -25,18 +25,18 @@ def show_demo():
     console_blue.print(
         "\n--- LIST PRODUCTS PER TAG EXAMPLE ---\n"
         + "This method shows a table with the id and name of all the 'Product's"
-        + " that have a specific 'Tag'."
+        + " that have a specific 'Tag'.\n"
     )
     list_products_per_tag(1)
 
     console_blue.print(
         "\n--- ADD PRODUCTS TO CATALOG EXAMPLES ---\n"
         + "This method will:\n"
-        + "- Add 1 item of the 'Product' to a 'User' "
-        + "if it does not have the 'Product' yet.\n"
+        + "- Increase stock quantity by 1 "
+        + "if the 'User' already has an 'Asset' for the specified 'Product'.\n"
         + "or:\n"
-        + "- Increases stock quantity by 1 "
-        + "if the 'User' already has 'Asset' for the specified 'Product'.\n"
+        + "- Create a new 'Asset' for the 'User' "
+        + "if it does not have an 'Asset' of this 'Product' yet.\n"
     )
     art_print = Product.get_by_id(1)
     statue = Product.get_by_id(2)
@@ -45,17 +45,17 @@ def show_demo():
 
     console_blue.print(
         "\n--- UPDATE STOCK EXAMPLE ---\n"
-        + "With this method you can update stock quantity "
-        + "of specifc 'Product' for a 'User'.\n"
-        + "The argument quantity can be a positive (increase) number "
+        + "With this method you can update 'product_quantity' "
+        + "of specifc 'Asset' for a 'User'.\n"
+        + "The argument quantity can be a positive number (increase) "
         + "or negative number (decrease) to update stock quantity with.\n"
     )
     update_stock(1, 2, 4)
 
     console_blue.print(
         "\n--- PURCHASE PRODUCT EXAMPLE ---\n"
-        + "If the 'seller' has the sufficient quantity of the 'Product' "
-        + "in an 'Asset', this method will:\n"
+        + "If the 'seller' has the sufficient 'product_quantity' "
+        + "of the 'Product' in an 'Asset', this method will:\n"
         + "1. Add the specified 'quantity' of 'Product' to the 'buyer's 'Asset';\n"
         + "2. Decrease 'product quantity' in the 'Asset' for the 'seller';\n"
         + "3. Log a 'Transaction' to the database.\n"
