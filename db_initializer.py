@@ -1,7 +1,12 @@
-from models import Asset, User, Tag, Transaction, Product, ProductTag, db
-from user_data import users
-from product_data import products
-from tag_data import tags
+from models import Asset, Product, User, Tag, Transaction, ProductTag, db
+from example_data import users, tags, products
+
+
+def initialize_db():
+    db.create_tables([Asset, Product, Tag, Transaction, User, ProductTag])
+    insert_data()  # insert product, tag and user data
+    create_assets()  # makes users own products (create Asset records in db)
+    add_tags_to_products()
 
 
 def insert_data():
@@ -53,6 +58,7 @@ def create_assets():
 
 
 def add_tags_to_products():
+    # get products
     print = Product.get_by_id(1)
     statue = Product.get_by_id(2)
     # get tags
@@ -63,6 +69,7 @@ def add_tags_to_products():
     tag_blue = Tag.get_by_id(5)
     tag_pink = Tag.get_by_id(6)
 
+    # add tags to the print product
     print.descriptive_tags.add(
         [tag_art, tag_print, tag_red, tag_white, tag_blue, tag_pink]
     )
