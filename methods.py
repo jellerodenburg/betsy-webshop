@@ -7,9 +7,48 @@ console = Console()
 console_blue = Console(style="blue")
 
 
+# ------------- SEARCH PRODUCTS -------------------------- #
+
+
 def search(term):
-    term = term
-    products = Product.select()
+    all_products = Product.select()
+    products_with_term = find_products_with_term(term, all_products)
+    table = create_search_results_table(term)
+    fill_table_with_results(table, products_with_term, term)
+
+
+def create_search_results_table(term):
+    table = Table(
+        title=f"Product search results for: '[r]{term}[/r]'", show_lines=True
+    )
+    table.add_column("Product name")
+    table.add_column("Product description")
+    table.add_column("Product tags")
+    return table
+
+
+def fill_table_with_results(table, products_with_term, term):
+    for product in products_with_term:
+
+        name = highlight(term, product.name)
+        description = highlight(term, product.description)
+
+        product_tags = ""
+        for tag in product.descriptive_tags:
+            product_tags += f"{tag.name}, "
+        product_tags = product_tags[:-2]
+        product_tags = highlight(term, product_tags)
+
+        table.add_row(name, description, product_tags)
+    console.print(Panel.fit(table))
+    print()
+
+
+def highlight(term, full_string):
+    return ireplace(term, f"[r]{term}[/r]", full_string)
+
+
+def find_products_with_term(term, products):
     products_with_term = []
     for product in products:
         if (
@@ -18,37 +57,7 @@ def search(term):
             or term_in_descriptive_tags(term, product)
         ):
             products_with_term.append(product)
-
-    table = Table(
-        title=f"Product search results for: '[r]{term}[/r]'", show_lines=True
-    )
-    table.add_column("Product name")
-    table.add_column("Product description")
-    table.add_column("Product tags")
-
-    for product in products_with_term:
-        product_name_highlighted = ireplace(
-            term, f"[r]{term}[/r]", product.name
-        )
-        product_description_highlighted = ireplace(
-            term, f"[r]{term}[/r]", product.description
-        )
-        product_tags_string = ""
-        for tag in product.descriptive_tags:
-            product_tags_string += f"{tag.name}, "
-        product_tags_string = product_tags_string[:-2]
-        product_tags_highlighted = ireplace(
-            term, f"[r]{term}[/r]", product_tags_string
-        )
-
-        table.add_row(
-            product_name_highlighted,
-            product_description_highlighted,
-            product_tags_highlighted,
-        )
-
-    console.print(Panel.fit(table))
-    print()
+    return products_with_term
 
 
 def ireplace(old, new, text):
@@ -67,6 +76,9 @@ def term_in_descriptive_tags(term, product):
         if term in tag.name:
             return True
     return False
+
+
+# -------------- LIST USER PRODUCTS ---------------------- #
 
 
 def list_user_products(user_id):
@@ -89,6 +101,9 @@ def list_user_products(user_id):
     print()
 
 
+# -------------- LIST PRODUCTS PER TAG ------------------- #
+
+
 def list_products_per_tag(tag_id):
     tag = Tag.get_by_id(tag_id)
     products_per_tag = [
@@ -108,15 +123,13 @@ def list_products_per_tag(tag_id):
     print()
 
 
+# -------------- UPDATE STOCK ---------------------------- #
+
+
 def update_stock(user_id, product_id, new_quantity):
     user = User.get_by_id(user_id)
     product_to_update = Product.get_by_id(product_id)
-    existing_asset = (
-        Asset.select()
-        .where(Asset.owner == user)
-        .where(Asset.product == product_to_update)
-        .first()
-    )
+    existing_asset = get_asset(user, product_to_update)
     # is user does not yet have the product:
     if existing_asset is None:
         # create new asset
@@ -152,91 +165,81 @@ def update_stock(user_id, product_id, new_quantity):
     list_user_products(user_id)
 
 
-def add_product_to_catalog(user_id, product):
-    user = User.get_by_id(user_id)
-    product_id = product.id
-    existing_asset = (
+def get_asset(user, product):
+    asset = (
         Asset.select()
         .where(Asset.owner == user)
         .where(Asset.product == product)
         .first()
     )
+    return asset
+
+
+# -------------- ADD PRODUCT TO CATALOG ------------------ #
+
+
+def add_product_to_catalog(user_id, product):
+    user = User.get_by_id(user_id)
+    product_id = product.id
+    existing_asset = get_asset(user, product)
     if existing_asset is None:
         update_stock(user_id, product_id, 1)
     else:
         update_stock(user_id, product_id, existing_asset.product_quantity + 1)
 
 
+# -------------- PURCHASE PRODUCT ------------------------ #
+
+
 def purchase_product(product_id, buyer_id, seller_id, quantity):
     seller = User.get_by_id(seller_id)
     buyer = User.get_by_id(buyer_id)
-    product_to_purchase = Product.get_by_id(product_id)
-    existing_asset_from_seller = (
-        Asset.select()
-        .where(Asset.owner == seller)
-        .where(Asset.product == product_to_purchase)
-        .first()
-    )
+    product = Product.get_by_id(product_id)
+    seller_asset = get_asset(seller, product)
+    seller_stock = seller_asset.product_quantity
     if seller == buyer:
-        console.print(
-            f"Sorry, {buyer.first_name} {buyer.last_name}, "
-            + "you cannot buy products from yourself..."
-        )
+        console.print("Sorry, you cannot buy products from yourself.")
+    if quantity < 1:
+        console.print("Sorry, you cannot purchase zero or negative quantity.")
     # if seller does not have the product available:
-    elif existing_asset_from_seller is None:
+    elif seller_asset is None:
         console.print("The seller does not have the desired product")
-    elif existing_asset_from_seller.product_quantity < quantity:
+    elif seller_stock < quantity:
         console.print(
             "The seller does not have sufficient quantity of the product"
         )
     else:
         console.print(
-            "----- TRANSACTION ------------\n"
+            "---- TRANSACTION ----\n"
             + f"A quantity of {quantity} "
-            + f"of product '{product_to_purchase.name}' has been sold "
+            + f"of product '{product.name}' has been sold "
             + f"from '{seller.first_name} {seller.last_name}' "
             + f"to '{buyer.first_name} {buyer.last_name}': \n"
         )
         Transaction.create(
             buyer=buyer,
             seller=seller,
-            product=product_to_purchase,
+            product=product,
             product_quantity=quantity,
         )
-        existing_asset_from_buyer = (
-            Asset.select()
-            .where(Asset.owner == buyer)
-            .where(Asset.product == product_to_purchase)
-            .first()
-        )
-        existing_buyer_product_quantity = 0
-        if existing_asset_from_buyer is not None:
-            existing_buyer_product_quantity = (
-                existing_asset_from_buyer.product_quantity
-            )
-        update_stock(
-            buyer.id,
-            product_to_purchase.id,
-            existing_buyer_product_quantity + quantity,
-        )
-        update_stock(
-            seller.id,
-            product_to_purchase.id,
-            (existing_asset_from_seller.product_quantity + quantity),
-        )
+        buyer_asset = get_asset(buyer, product)
+        buyer_stock = 0
+        seller_new_stock = seller_stock - quantity
+        if buyer_asset is not None:
+            buyer_stock = buyer_asset.product_quantity
+        update_stock(buyer.id, product.id, buyer_stock + quantity)
+        update_stock(seller.id, product.id, seller_new_stock)
+
+
+# -------------- REMOVE PRODUCT -------------------------- #
 
 
 def remove_product(user_id, product_id):
-    "----- REMOVE PRODUCT ------------\n"
     user = User.get_by_id(user_id)
     product = Product.get_by_id(product_id)
-    existing_asset = (
-        Asset.select()
-        .where(Asset.owner == user)
-        .where(Asset.product == product)
-        .first()
-    )
+    existing_asset = get_asset(user, product)
     if existing_asset is None:
         console.print("The seller does not have this product")
     else:
-        update_stock(user_id, product_id, existing_asset.product_quantity - 1)
+        new_quantity = existing_asset.product_quantity - 1
+        update_stock(user_id, product_id, new_quantity)
